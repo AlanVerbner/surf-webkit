@@ -66,6 +66,7 @@ typedef enum {
 	FontSize,
 	FrameFlattening,
 	Geolocation,
+ Notifications,
 	HideBackground,
 	Inspector,
 	JavaScript,
@@ -224,7 +225,7 @@ static void clicknewwindow(Client *c, const Arg *a, WebKitHitTestResult *h);
 static void clickexternplayer(Client *c, const Arg *a, WebKitHitTestResult *h);
 
 static char winid[64];
-static char togglestats[10];
+static char togglestats[11];
 static char pagestats[2];
 static Atom atoms[AtomLast];
 static Window embed;
@@ -560,13 +561,14 @@ gettogglestats(Client *c)
 	togglestats[0] = cookiepolicy_set(cookiepolicy_get());
 	togglestats[1] = curconfig[CaretBrowsing].val.b ?   'C' : 'c';
 	togglestats[2] = curconfig[Geolocation].val.b ?     'G' : 'g';
-	togglestats[3] = curconfig[DiskCache].val.b ?       'D' : 'd';
-	togglestats[4] = curconfig[LoadImages].val.b ?      'I' : 'i';
-	togglestats[5] = curconfig[JavaScript].val.b ?      'S' : 's';
-	togglestats[6] = curconfig[Plugins].val.b ?         'V' : 'v';
-	togglestats[7] = curconfig[Style].val.b ?           'M' : 'm';
-	togglestats[8] = curconfig[FrameFlattening].val.b ? 'F' : 'f';
-	togglestats[9] = '\0';
+	togglestats[3] = curconfig[Notifications].val.b ?   'T' : 't';
+	togglestats[4] = curconfig[DiskCache].val.b ?       'D' : 'd';
+	togglestats[5] = curconfig[LoadImages].val.b ?      'I' : 'i';
+	togglestats[6] = curconfig[JavaScript].val.b ?      'S' : 's';
+	togglestats[7] = curconfig[Plugins].val.b ?         'V' : 'v';
+	togglestats[8] = curconfig[Style].val.b ?           'M' : 'm';
+	togglestats[9] = curconfig[FrameFlattening].val.b ? 'F' : 'f';
+	togglestats[10] = '\0';
 }
 
 void
@@ -830,6 +832,7 @@ newwindow(Client *c, const Arg *a, int noembed)
 	}
 	cmd[i++] = curconfig[RunInFullscreen].val.b ? "-F" : "-f" ;
 	cmd[i++] = curconfig[Geolocation].val.b ?     "-G" : "-g" ;
+	cmd[i++] = curconfig[Notifications].val.b ?   "-T" : "-t" ;
 	cmd[i++] = curconfig[LoadImages].val.b ?      "-I" : "-i" ;
 	cmd[i++] = curconfig[KioskMode].val.b ?       "-K" : "-k" ;
 	cmd[i++] = curconfig[Style].val.b ?           "-M" : "-m" ;
@@ -1292,6 +1295,16 @@ permissionrequested(WebKitWebView *v, WebKitPermissionRequest *r, Client *c)
 {
 	if (WEBKIT_IS_GEOLOCATION_PERMISSION_REQUEST(r)) {
 		if (curconfig[Geolocation].val.b)
+			webkit_permission_request_allow(r);
+		else
+			webkit_permission_request_deny(r);
+		return TRUE;
+	}
+
+ // FIXME: This code could be improved
+ if (WEBKIT_IS_NOTIFICATION_PERMISSION_REQUEST(r)) {
+		webkit_permission_request_allow(r);
+		if (curconfig[Notifications].val.b)
 			webkit_permission_request_allow(r);
 		else
 			webkit_permission_request_deny(r);

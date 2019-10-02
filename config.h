@@ -16,7 +16,7 @@ static Parameter defconfig[ParameterLast] = {
 	SETI(FontSize,           12),
 	SETB(FrameFlattening,    0),
 	SETB(Geolocation,        0),
-	SETB(Notifications,      0),
+	SETB(Notifications,      1),
 	SETB(HideBackground,     0),
 	SETB(Inspector,          0),
 	SETB(JavaScript,         1),
